@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f1e7">
+<title>Драфт отпуска</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#f7f1e7;--card:#fffdf9;--ink:#17191d;--muted:#77736d;--line:#e6ddcf;--accent:#ff7442;--accent2:#e9a23b;--green:#2c9b73;--red:#d85c5c;--shadow:0 16px 40px rgba(45,35,20,.09)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-rounded,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{overflow-x:hidden}
+.app{min-height:100vh;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom)}.wrap{max-width:760px;margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0}.logo{font-weight:950;font-size:18px}.pill{border:1px solid var(--line);background:rgba(255,255,255,.72);padding:8px 11px;border-radius:999px;font-size:12px;font-weight:850}
+.hero{padding:28px 2px 14px}.kicker{text-transform:uppercase;letter-spacing:1.7px;color:var(--accent);font-size:11px;font-weight:950}.hero h1{font-size:48px;line-height:.94;letter-spacing:-2.8px;margin:7px 0 14px}.hero h2{font-size:32px;line-height:1;letter-spacing:-1.3px;margin:7px 0 12px}.lead{color:var(--muted);font-size:16px;line-height:1.45;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:18px;margin:12px 0;box-shadow:var(--shadow)}
+.btn{width:100%;border:0;border-radius:18px;padding:15px 17px;font:900 16px inherit;background:var(--ink);color:#fff;cursor:pointer}.btn.orange{background:var(--accent)}.btn.alt{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px}.row>*{flex:1}.spacer{height:10px}.small{font-size:12px;line-height:1.4;color:var(--muted)}.center{text-align:center}
+.avatar-stage{position:relative;height:355px;display:grid;place-items:end center;overflow:hidden;margin:-2px -10px 8px;touch-action:pan-y}.avatar-stage:before{content:"";position:absolute;bottom:8px;width:250px;height:34px;background:radial-gradient(ellipse,rgba(38,30,20,.14),transparent 68%);filter:blur(5px)}
+.hero-avatar{position:relative;height:330px;width:260px;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 15px 10px rgba(36,28,19,.13));user-select:none;-webkit-user-drag:none}.guest-avatar{font-size:140px;line-height:1;filter:grayscale(.15)}
+.swipe-hint{display:flex;justify-content:space-between;color:#a19b92;font-size:11px;font-weight:800;padding:0 16px}.selector-name{font-size:24px;font-weight:950;margin:4px 0}.selector-count{color:var(--muted);font-size:12px}
+.stepper-card{padding:14px 12px;border:1px solid var(--line);background:#fffaf2;border-radius:18px;margin:10px 0}.stepper-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.stepper{display:flex;align-items:center;gap:8px}.step{width:42px;height:42px;border:0;border-radius:14px;background:#eee6d9;font-size:25px;font-weight:900}.value{min-width:48px;text-align:center;font-size:20px;font-weight:950}.range-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.input{width:100%;padding:14px;border:2px solid var(--line);border-radius:16px;background:#fff;font:800 16px inherit;outline:none}.input:focus{border-color:var(--accent)}
+.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}.month{border:1px solid var(--line);background:#fff;border-radius:13px;padding:10px 4px;font-weight:850;font-size:12px}.month.selected{background:#fff0e8;border-color:var(--accent);color:#b54821}
+.metric{padding:14px 12px;border:1px solid var(--line);background:#fffaf2;border-radius:18px;margin:10px 0}.metric-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.metric-name{display:flex;align-items:center;gap:9px}.metric-icon{font-size:25px}.dots{display:flex;gap:5px;margin-top:10px}.dot{height:7px;flex:1;border-radius:99px;background:#e6ded1}.dot.on{background:var(--accent)}
+.choice{width:100%;text-align:left;border:2px solid var(--line);background:#fff;border-radius:18px;padding:14px;margin:7px 0;font:inherit;color:inherit}.choice.selected{border-color:var(--accent);background:#fff0e8}.choice b{display:block}.choice .emoji{font-size:25px;float:left;margin-right:10px}
+.result-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee7dc}.result-row:last-child{border-bottom:0}.rank{font-size:22px;font-weight:950;width:32px;text-align:center}.country-flag{font-size:25px}.country-name{font-size:17px;font-weight:950}.score{margin-left:auto;font-size:21px;font-weight:950;color:var(--accent)}.reason{font-size:11px;color:var(--muted);margin-top:3px}.bar{height:8px;border-radius:99px;background:#eee6dc;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),#ffb04f)}
+.winner{padding:20px;background:linear-gradient(135deg,#fff4e8,#fffdf9);border:2px solid #ffad6d}.winner-label{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:#9a8069;font-weight:950}.winner h2{font-size:38px;margin:6px 0}.winner-meta{color:var(--muted);font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.tag{padding:7px 9px;border-radius:999px;background:#f3ece1;font-size:11px;font-weight:850}.tag.warn{background:#fff0f0;color:#a64242}
+.people-strip{display:flex;align-items:flex-end;overflow-x:auto;padding:16px 4px 4px;scrollbar-width:none}.people-strip::-webkit-scrollbar{display:none}.person-mini{position:relative;width:78px;min-width:78px;height:92px;margin-left:-13px;cursor:pointer}.person-mini:first-child{margin-left:0}.person-mini img{width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 7px 7px rgba(36,28,19,.12))}.person-mini .initial{width:58px;height:58px;border-radius:50%;background:#eee4d5;display:grid;place-items:center;font-weight:950}.person-mini span{position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);white-space:nowrap;background:rgba(255,253,249,.9);border:1px solid var(--line);border-radius:999px;padding:3px 7px;font-size:9px;font-weight:900}
+#map{height:430px;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:#dceaf0}.leaflet-container{font-family:inherit}.route-card{overflow:hidden}.route-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.route-total{font-size:12px;color:var(--muted);font-weight:850}.route-stop{display:flex;gap:10px;align-items:center;margin:10px 0}.stop-num{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:950}.stop-name{font-weight:900}.stop-meta{font-size:11px;color:var(--muted)}
+.marker{width:30px;height:30px;border-radius:50%;background:#ff7442;color:#fff;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.2);display:grid;place-items:center;font-weight:950}
+.toast{position:fixed;left:14px;right:14px;bottom:16px;background:#17191d;color:#fff;padding:13px 15px;border-radius:16px;font-weight:800;display:none;z-index:9999}
+.hide{display:none!important}@media(max-width:500px){.hero h1{font-size:42px}.avatar-stage{height:320px}.hero-avatar{height:300px;width:235px}.range-row{grid-template-columns:1fr}.month-grid{grid-template-columns:repeat(3,1fr)}#map{height:360px}}
+
+.round-screen{min-height:calc(100vh - 40px)}.round-progress{display:flex;gap:7px;margin:4px 2px 14px}.round-progress span{height:4px;flex:1;border-radius:99px;background:#e5dccd}.round-progress span.active{background:#ff9b57}.round-total{font-size:16px;margin:16px 0}.hero.compact{padding-top:10px;padding-bottom:8px}
+</style>
+</head>
+<body>
+<div class="app"><div class="wrap" id="app"></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const SUPABASE_URL="https://zzmeraotuecxazomugeq.supabase.co";
+const SUPABASE_KEY="sb_publishable_8ntDczdMbR241G6D8HBTMw_7J3rOFj7";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const AVATAR_SOURCE="";
+const PEOPLE=["Непокрытов Даниил","Ромашко Валерий","Семенов Дамир","Хохлова Эвелина","Романов Кирилл","Джваршеишвили Саба","Выборова Арина","Романов Александр","Ситников Семен"];
+const MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+
+const COUNTRIES=[
+{n:"Вьетнам",e:"🇻🇳",mix:[.72,.63,.88],tags:["пляж","природа","ночная жизнь"],daily:19,season:[.72,.76,.82,.90,.94,.91,.78,.72,.70,.74,.82,.86],ideal:[8,14]},
+{n:"Таиланд",e:"🇹🇭",mix:[.98,.58,.87],tags:["пляж","ночная жизнь","природа"],daily:18,season:[.94,.96,.90,.80,.72,.67,.66,.70,.74,.80,.86,.92],ideal:[8,14]},
+{n:"Шри-Ланка",e:"🇱🇰",mix:[.91,.40,.96],tags:["пляж","природа","экзотика"],daily:17,season:[.90,.91,.78,.66,.62,.64,.70,.76,.80,.84,.86,.88],ideal:[9,14]},
+{n:"Китай",e:"🇨🇳",mix:[.38,.94,.91],tags:["история","города","природа"],daily:24,season:[.54,.58,.72,.84,.90,.88,.78,.72,.82,.90,.76,.58],ideal:[10,16]},
+{n:"Япония",e:"🇯🇵",mix:[.30,.98,.82],tags:["история","города","природа"],daily:30,season:[.58,.62,.76,.92,.88,.76,.68,.66,.74,.88,.90,.68],ideal:[10,16]},
+{n:"Испания",e:"🇪🇸",mix:[.86,.91,.58],tags:["города","история","море","ночная жизнь"],daily:27,season:[.62,.66,.72,.82,.92,.96,.98,.96,.94,.86,.72,.64],ideal:[8,14]},
+{n:"Италия",e:"🇮🇹",mix:[.62,.96,.63],tags:["история","города","море"],daily:29,season:[.64,.68,.76,.88,.94,.97,.98,.96,.94,.86,.72,.62],ideal:[8,14]},
+{n:"Турция",e:"🇹🇷",mix:[.90,.84,.66],tags:["море","история","ночная жизнь"],daily:22,season:[.60,.62,.70,.82,.92,.96,.98,.96,.92,.82,.70,.62],ideal:[7,14]},
+{n:"Марокко",e:"🇲🇦",mix:[.48,.82,.91],tags:["история","природа","экзотика"],daily:20,season:[.90,.92,.90,.88,.82,.72,.62,.62,.72,.82,.88,.90],ideal:[7,14]},
+{n:"Египет",e:"🇪🇬",mix:[.94,.58,.52],tags:["море","история","ночная жизнь"],daily:18,season:[.94,.92,.88,.80,.70,.62,.58,.58,.66,.76,.86,.92],ideal:[7,12]},
+{n:"ЮАР",e:"🇿🇦",mix:[.60,.67,.99],tags:["сафари","природа","города","вино"],daily:26,season:[.96,.94,.88,.78,.70,.62,.58,.62,.72,.82,.92,.96],ideal:[10,16]},
+{n:"Индия",e:"🇮🇳",mix:[.35,.80,.92],tags:["история","экзотика","природа"],daily:17,season:[.92,.90,.82,.66,.48,.42,.40,.44,.50,.66,.82,.90],ideal:[10,16]},
+{n:"Мальдивы",e:"🇲🇻",mix:[1,.18,.48],tags:["пляж","релакс","дайвинг"],daily:31,season:[.96,.96,.94,.88,.82,.76,.70,.72,.78,.84,.90,.94],ideal:[7,12]},
+{n:"Филиппины",e:"🇵🇭",mix:[.99,.42,.93],tags:["пляж","острова","природа","дайвинг"],daily:19,season:[.94,.96,.92,.84,.76,.68,.64,.62,.66,.74,.86,.94],ideal:[8,14]}
+];
+
+const REDFLAGS=[
+["moves","🚗","Много перемещений","Не хочу часто менять города и отели."],
+["night","🍻","Нет нормальной ночной жизни","Нужны бары, клубы и вечерний движ."],
+["history","🏛️","Бедное историческое наследие","Хочу архитектуру, историю и древние места."],
+["heat","🌡️","Слишком жарко","Жара и влажность могут испортить поездку."],
+["crowd","👥","Слишком туристично","Не хочу постоянно быть в толпе."]
+];
+
+const ROUTES={
+"Китай":[
+["Пекин","city","город + история",39.9042,116.4074],
+["Сиань","history","история",34.3416,108.9398],
+["Шанхай","city","город",31.2304,121.4737],
+["Гуйлинь","nature","природа",25.2741,110.2900],
+["Санья","beach","пляж",18.2528,109.5119]],
+"Таиланд":[["Бангкок","city","город + ночная жизнь",13.7563,100.5018],["Чиангмай","nature","природа + город",18.7883,98.9853],["Аюттхая","history","история",14.3532,100.5680],["Краби","beach","пляж",8.0863,98.9063],["Пхукет","beach","пляж",7.8804,98.3923]],
+"Вьетнам":[["Ханой","city","город + история",21.0278,105.8342],["Хошимин","city","город + ночная жизнь",10.8231,106.6297],["Хойан","history","история + город",15.8801,108.3380],["Ниньбинь","nature","природа",20.2506,105.9745],["Дананг","beach","пляж",16.0544,108.2022]],
+"Шри-Ланка":[["Коломбо","city","город",6.9271,79.8612],["Канди","history","история",7.2906,80.6337],["Элла","nature","природа",6.8667,81.0466],["Сигирия","history","история",7.9570,80.7603],["Мирисса","beach","пляж",5.9483,80.4716]],
+"Япония":[["Токио","city","город",35.6762,139.6503],["Киото","history","история",35.0116,135.7681],["Осака","city","город",34.6937,135.5023],["Нара","nature","природа + история",34.6851,135.8048],["Окинава","beach","пляж",26.2124,127.6809]],
+"Испания":[["Барселона","city","город + море",41.3874,2.1686],["Мадрид","city","город + история",40.4168,-3.7038],["Севилья","history","история",37.3891,-5.9845],["Майорка","beach","пляж",39.5696,2.6502],["Тенерифе","nature","природа",28.4636,-16.2518]],
+"Италия":[["Рим","history","история + город",41.9028,12.4964],["Флоренция","history","история",43.7696,11.2558],["Милан","city","город",45.4642,9.1900],["Амальфи","beach","море",40.6340,14.6027],["Доломиты","nature","природа",46.4102,11.8440]],
+"Турция":[["Стамбул","city","город + история",41.0082,28.9784],["Каппадокия","nature","природа",38.6431,34.8289],["Анталья","beach","море",36.8969,30.7133],["Эфес","history","история",37.9390,27.3410],["Бодрум","beach","море",37.0344,27.4305]],
+"Марокко":[["Марракеш","city","город + история",31.6295,-7.9811],["Фес","history","история",34.0181,-5.0078],["Шефшауэн","city","город",35.1714,-5.2697],["Эс-Сувейра","beach","море",31.5085,-9.7595],["Атлас","nature","природа",31.0000,-6.0000]],
+"Египет":[["Каир","history","история + город",30.0444,31.2357],["Луксор","history","история",25.6872,32.6396],["Хургада","beach","море",27.2579,33.8116],["Шарм-эль-Шейх","beach","море",27.9158,34.3300],["Дахаб","nature","природа + море",28.5097,34.5165]],
+"ЮАР":[["Кейптаун","city","город",-33.9249,18.4241],["Стелленбош","city","вино + город",-33.9321,18.8602],["Крюгер","nature","сафари + природа",-23.9884,31.5547],["Германус","nature","природа",-34.4187,19.2345],["Дурбан","beach","море",-29.8587,31.0218]],
+"Индия":[["Дели","city","город + история",28.6139,77.2090],["Джайпур","history","история",26.9124,75.7873],["Варанаси","history","история",25.3176,82.9739],["Керала","nature","природа",9.9312,76.2673],["Гоа","beach","пляж",15.2993,74.1240]],
+"Мальдивы":[["Мале","city","город",4.1755,73.5093],["Ари","beach","пляж",3.9000,72.9500],["Ба-Атолл","nature","дайвинг + природа",5.2000,73.0000]],
+"Филиппины":[["Манила","city","город",14.5995,120.9842],["Палаван","nature","природа",9.8349,118.7384],["Себу","city","город + море",10.3157,123.8854],["Боракай","beach","пляж",11.9674,121.9248],["Бохоль","nature","природа",9.8500,124.1435]]
+};
+
+let AVATARS={};
+const AVATAR_FALLBACK={"Непокрытов Даниил":12,"Ромашко Валерий":15,"Семенов Дамир":3,"Хохлова Эвелина":5,"Романов Кирилл":8,"Джваршеишвили Саба":11,"Выборова Арина":32,"Романов Александр":13,"Ситников Семен":14};
+let groupCache=[];
+let mapInstance=null;
+
+let state={
+screen:"home",mode:null,person:null,characterIndex:0,step:0,
+days:{beach:3,city:3,nature:4},daysMin:10,daysMax:12,budget:220000,startMonth:4,endMonth:6,
+nightlife:3,comfort:3,pace:3,history:3,flags:[],individual:null
+};
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function initials(name){return String(name).split(/\s+/).map(x=>x[0]).slice(0,2).join("")}
+function avatarHTML(name,cls=""){const src=AVATARS[name]||`https://i.pravatar.cc/700?img=${AVATAR_FALLBACK[name]||1}`;return `<img class="${cls}" src="${src}" alt="" loading="eager" referrerpolicy="no-referrer">`}
+function toast(t){const x=document.getElementById("toast");x.textContent=t;x.style.display="block";clearTimeout(window.__toast);window.__toast=setTimeout(()=>x.style.display="none",2300)}
+function save(){localStorage.setItem("vacationDraftStateV2",JSON.stringify(state));localStorage.setItem("vacationDraftGroupV2",JSON.stringify(groupCache))}
+function load(){try{const s=JSON.parse(localStorage.getItem("vacationDraftStateV2")||"null");if(s)state={...state,...s};const g=JSON.parse(localStorage.getItem("vacationDraftGroupV2")||"[]");if(Array.isArray(g))groupCache=g}catch(e){}}
+function sumDays(){return state.days.beach+state.days.city+state.days.nature}
+function changeDay(k,d){const next=state.days[k]+d;if(next<0||next>10)return;if(d>0&&sumDays()>=10)return;state.days[k]=next;render()}
+function changeMetric(k,d){const next=state[k]+d;if(next<1||next>5)return;state[k]=next;render()}
+function toggleFlag(k){if(state.flags.includes(k))state.flags=state.flags.filter(x=>x!==k);else if(state.flags.length<5)state.flags.push(k);else return toast("Максимум 5 red flags");render()}
+function resetSurvey(){state.step=0;state.days={beach:3,city:3,nature:4};state.daysMin=10;state.daysMax=12;state.budget=220000;state.startMonth=4;state.endMonth=6;state.nightlife=3;state.comfort=3;state.pace=3;state.history=3;state.flags=[];state.individual=null}
+function startParticipant(){state.mode="participant";state.characterIndex=0;state.screen="character";resetSurvey();render()}
+function startGuest(){state.mode="guest";state.person="Гость";state.characterIndex=PEOPLE.length;state.screen="character";resetSurvey();render()}
+function selectedName(){return state.characterIndex<PEOPLE.length?PEOPLE[state.characterIndex]:"Гость"}
+function chooseCharacter(){const n=selectedName();if(n==="Гость"){state.mode="guest";state.person="Гость"}else{state.mode="participant";state.person=n}state.step=0;state.screen="game";render()}
+function moveCharacter(dir){const max=PEOPLE.length;state.characterIndex=(state.characterIndex+dir+max+1)%(max+1);render()}
+let touchX=null;
+function bindSwipe(){const el=document.getElementById("avatarStage");if(!el)return;el.addEventListener("touchstart",e=>touchX=e.changedTouches[0].clientX,{passive:true});el.addEventListener("touchend",e=>{if(touchX===null)return;const dx=e.changedTouches[0].clientX-touchX;touchX=null;if(Math.abs(dx)>45)moveCharacter(dx<0?1:-1)},{passive:true})}
+function nextRound(){if(state.step===0&&sumDays()!==10)return toast("Распредели ровно 10 дней");if(state.step===1){if(state.daysMin<1||state.daysMax<state.daysMin)return toast("Проверь диапазон дней");if(state.budget<50000)return toast("Укажи реальный бюджет")}state.step++;render()}
+function setMonth(k,v){state[k]=+v;if(state.startMonth>state.endMonth)state.endMonth=state.startMonth;render()}
+function setNumber(k,v){let n=Math.round(+v||0);if(k==="daysMin")n=Math.max(1,Math.min(30,n));if(k==="daysMax")n=Math.max(1,Math.min(30,n));if(k==="budget")n=Math.max(50000,Math.min(1000000,n));state[k]=n;render()}
+
+function monthList(a,b){const lo=Math.min(a,b),hi=Math.max(a,b);return Array.from({length:hi-lo+1},(_,i)=>lo+i)}
+function monthFit(country,p){return monthList(p.startMonth,p.endMonth).reduce((s,m)=>s+country.season[m-1],0)/monthList(p.startMonth,p.endMonth).length}
+function normalizePerson(p){
+ const d=p.days||{beach:3,city:3,nature:4};
+ const start=Number.isFinite(p.startMonth)?p.startMonth:(Number.isFinite(p.month)?Math.max(1,Math.min(12,p.month)):4);
+ const end=Number.isFinite(p.endMonth)?p.endMonth:start;
+ return {...p,days:{beach:+d.beach||0,city:+d.city||0,nature:+d.nature||0},daysMin:+p.daysMin||10,daysMax:+p.daysMax||12,budget:+p.budget||220000,startMonth:start,endMonth:Math.max(start,end),nightlife:+p.nightlife||3,comfort:+p.comfort||3,pace:+p.pace||3,history:+p.history||3,flags:Array.isArray(p.flags)?p.flags:[]};
+}
+function countryScore(c,p){
+ p=normalizePerson(p);
+ const style=(p.days.beach/10*c.mix[0]+p.days.city/10*c.mix[1]+p.days.nature/10*c.mix[2]);
+ const styleScore=style*56;
+ let pref=0;
+ if(c.tags.includes("ночная жизнь"))pref+=(p.nightlife-1)/4*9; else pref+=(5-p.nightlife)/4*2;
+ if(c.tags.includes("история"))pref+=(p.history-1)/4*9;
+ if(c.n.includes("Мальдивы"))pref+=(p.comfort-1)/4*3;
+ pref+=(p.pace-1)/4*(c.mix[1]*2+c.mix[2]*4);
+ const mf=monthFit(c,p);
+ const monthScore=mf*10;
+ const dailyBudget=p.budget/Math.max(1,(p.daysMin+p.daysMax)/2);
+ const budgetRatio=dailyBudget/c.daily;
+ const budgetScore=Math.max(0,Math.min(10,8+(budgetRatio-1)*10));
+ const idealOverlap=Math.max(0,Math.min(p.daysMax,c.ideal[1])-Math.max(p.daysMin,c.ideal[0])+1);
+ const span=Math.max(1,p.daysMax-p.daysMin+1);
+ const durationScore=(idealOverlap/span)*7;
+ let penalty=0;
+ p.flags.forEach(f=>{
+   if(f==="moves") penalty+=c.n==="Китай"||c.n==="Япония"||c.n==="Индия"?5:1;
+   if(f==="night"&&!c.tags.includes("ночная жизнь"))penalty+=7;
+   if(f==="history"&&!c.tags.includes("история"))penalty+=7;
+   if(f==="heat"&&["Египет","Таиланд","Индия","Вьетнам"].includes(c.n))penalty+=6;
+   if(f==="crowd"&&["Таиланд","Испания","Италия","Япония"].includes(c.n))penalty+=4;
+ });
+ return Math.max(0,Math.min(100,styleScore+pref+monthScore+budgetScore+durationScore-penalty));
+}
+function calcFor(p){return COUNTRIES.map(c=>({...c,score:countryScore(c,p)})).sort((a,b)=>b.score-a.score)}
+function aggregate(all){
+ if(!all.length)return [];
+ const ps=all.map(normalizePerson);
+ return COUNTRIES.map(c=>{
+   const vals=ps.map(p=>countryScore(c,p));
+   const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+   const spread=Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/vals.length);
+   const consensus=Math.max(0,10-spread);
+   return {...c,score:mean+consensus*.15,mean,spread};
+ }).sort((a,b)=>b.score-a.score);
+}
+function aggregateFlags(all){
+ const m={};all.forEach(p=>(p.flags||[]).forEach(f=>m[f]=(m[f]||0)+1));
+ return REDFLAGS.map(x=>({...x,count:m[x[0]]||0})).filter(x=>x.count).sort((a,b)=>b.count-a.count);
+}
+function groupProfile(all){
+ if(!all.length)return {beach:.3,city:.3,nature:.4,nightlife:3,history:3,budget:220000,daysMin:10,daysMax:12,startMonth:4,endMonth:6};
+ const ps=all.map(normalizePerson), n=ps.length;
+ return {
+ beach:ps.reduce((s,p)=>s+p.days.beach/10,0)/n,city:ps.reduce((s,p)=>s+p.days.city/10,0)/n,nature:ps.reduce((s,p)=>s+p.days.nature/10,0)/n,
+ nightlife:ps.reduce((s,p)=>s+p.nightlife,0)/n,history:ps.reduce((s,p)=>s+p.history,0)/n,
+ budget:ps.reduce((s,p)=>s+p.budget,0)/n,daysMin:Math.round(ps.reduce((s,p)=>s+p.daysMin,0)/n),daysMax:Math.round(ps.reduce((s,p)=>s+p.daysMax,0)/n),
+ startMonth:Math.min(...ps.map(p=>p.startMonth)),endMonth:Math.max(...ps.map(p=>p.endMonth))
+ };
+}
+function routeFor(country,all){
+ const candidates=ROUTES[country.n]||[];
+ if(!candidates.length)return [];
+ const g=groupProfile(all);
+ const shares={city:g.city,beach:g.beach,nature:g.nature,history:Math.max(g.history/5*.7,g.city*.35)};
+ const desiredDays=Math.max(5,Math.min(18,Math.round((g.daysMin+g.daysMax)/2)));
+ const count=desiredDays<=7?3:desiredDays<=11?4:5;
+ const dominant=Object.entries({city:g.city,beach:g.beach,nature:g.nature}).sort((a,b)=>b[1]-a[1])[0][0];
+ let allowed;
+ if(shares[dominant]>=.50){
+   if(dominant==='city') allowed=new Set(['city','history']);
+   else if(dominant==='beach') allowed=new Set(['beach']);
+   else allowed=new Set(['nature','history']);
+ }else allowed=new Set(['city','history','nature','beach']);
+ let pool=candidates.filter(x=>allowed.has(x[1])).map(x=>({...x,weight:(shares[x[1]]||.1)+(x[1]==='history'?g.history/5*.18:0)+(x[2].includes('ночная')&&g.nightlife>=4?.12:0)}));
+ if(pool.length<count){const extra=candidates.filter(x=>!pool.includes(x));pool.push(...extra.map(x=>({...x,weight:(shares[x[1]]||.05)*.45})));}
+ pool.sort((a,b)=>b.weight-a.weight);
+ const selected=[];
+ for(const x of pool){if(selected.length>=count)break;if(selected.length<2||x.weight>=.25)selected.push(x)}
+ if(selected.length<count)for(const x of pool)if(!selected.includes(x))selected.push(x);
+ const base=Math.floor(desiredDays/selected.length), rem=desiredDays%selected.length;
+ return selected.slice(0,count).map((x,i)=>({name:x[0],type:x[1],meta:x[2],lat:x[3],lng:x[4],days:base+(i<rem?1:0)}));
+}
+function reasonFor(c,g){
+ const parts=[];
+ const max=Math.max(g.beach,g.city,g.nature);
+ if(max===g.city&&c.mix[1]>.75)parts.push("много городов");
+ if(max===g.beach&&c.mix[0]>.8)parts.push("сильный пляжный профиль");
+ if(max===g.nature&&c.mix[2]>.8)parts.push("природа");
+ if(g.history>=4&&c.tags.includes("история"))parts.push("история");
+ if(g.nightlife>=4&&c.tags.includes("ночная жизнь"))parts.push("ночная жизнь");
+ return parts.slice(0,3).join(" · ")||c.tags.slice(0,3).join(" · ");
+}
+
+function participantPayload(){
+ return {participant_name:state.person,is_guest:false,answers:{
+   days:state.days,daysMin:state.daysMin,daysMax:state.daysMax,budget:state.budget,startMonth:state.startMonth,endMonth:state.endMonth,
+   flags:state.flags,nightlife:state.nightlife,comfort:state.comfort,pace:state.pace,history:state.history
+ },individual_result:state.individual,updated_at:new Date().toISOString()};
+}
+async function saveParticipant(){
+ const {data,error}=await db.from("results").upsert(participantPayload(),{onConflict:"participant_name"}).select("participant_name,is_guest,answers,individual_result,updated_at").single();
+ if(error)throw error;
+ const p=rowToPerson(data);groupCache=groupCache.filter(x=>x.name!==p.name);groupCache.push(p);groupCache.sort((a,b)=>a.name.localeCompare(b.name,"ru"));save();
+}
+function rowToPerson(row){const a=row.answers||{};return normalizePerson({name:row.participant_name,mode:"participant",days:a.days,daysMin:a.daysMin,daysMax:a.daysMax,budget:a.budget,startMonth:a.startMonth,endMonth:a.endMonth,month:a.month,flags:a.flags,nightlife:a.nightlife,comfort:a.comfort,pace:a.pace,history:a.history,individual_result:row.individual_result||[],updated_at:row.updated_at})}
+async function syncGroup(){
+ try{const {data,error}=await db.from("results").select("participant_name,is_guest,answers,individual_result,updated_at").eq("is_guest",false);if(error)throw error;groupCache=(data||[]).map(rowToPerson).filter(x=>x.name);save();if(state.screen==="results")render()}catch(e){console.warn(e)}
+}
+function finish(){
+ state.individual=calcFor(state);
+ if(state.mode==="participant"){
+   const local={name:state.person,mode:"participant",days:state.days,daysMin:state.daysMin,daysMax:state.daysMax,budget:state.budget,startMonth:state.startMonth,endMonth:state.endMonth,flags:state.flags,nightlife:state.nightlife,comfort:state.comfort,pace:state.pace,history:state.history,individual_result:state.individual,updated_at:new Date().toISOString()};
+   groupCache=groupCache.filter(x=>x.name!==state.person);groupCache.push(local);save();
+   saveParticipant().catch(e=>{console.error(e);toast("Не удалось сохранить результат в группу")});
+ }
+ state.screen="result";render();
+}
+
+function metric(k,icon,label,desc){return `<div class="metric"><div class="metric-head"><div class="metric-name"><span class="metric-icon">${icon}</span><div><b>${label}</b><div class="small">${desc}</div></div></div><div class="stepper"><button class="step" onclick="changeMetric('${k}',-1)">−</button><span class="value">${state[k]}</span><button class="step" onclick="changeMetric('${k}',1)">+</button></div></div><div class="dots">${[1,2,3,4,5].map(i=>`<i class="dot ${i<=state[k]?'on':''}"></i>`).join("")}</div></div>`}
+function dayControl(k,icon,label){return `<div class="stepper-card"><div class="stepper-head"><div><b>${icon} ${label}</b><div class="small">${state.days[k]} ${state.days[k]===1?"день":"дней"}</div></div><div class="stepper"><button class="step" onclick="changeDay('${k}',-1)">−</button><span class="value">${state.days[k]}</span><button class="step" onclick="changeDay('${k}',1)">+</button></div></div></div>`}
+function characterHTML(){
+ const n=selectedName();
+ return `<div class="top"><button class="pill" onclick="go('home')">← Назад</button><div class="pill">${state.mode==="guest"?"Гость":"Участник"}</div></div>
+ <div class="hero"><div class="kicker">Выбор персонажа</div><h2>Кто ты в этом путешествии?</h2><p class="lead">Свайпай персонажа влево или вправо.</p></div>
+ <div class="card center"><div id="avatarStage" class="avatar-stage">${n==="Гость"?`<div class="hero-avatar guest-avatar">👤</div>`:avatarHTML(n,"hero-avatar")}</div>
+ <div class="swipe-hint"><span>← предыдущий</span><span>${state.characterIndex+1} / ${PEOPLE.length+1}</span><span>следующий →</span></div>
+ <div class="selector-name">${esc(n)}</div><div class="selector-count">${n==="Гость"?"Результат будет только для тебя.":"Результат попадёт в общий драфт."}</div>
+ <div class="row" style="margin-top:16px"><button class="btn alt" onclick="moveCharacter(-1)">←</button><button class="btn orange" onclick="chooseCharacter()">Выбрать</button><button class="btn alt" onclick="moveCharacter(1)">→</button></div></div>`;
+}
+function backRound(n){if(n===1)go("character");else{state.step=n-2;render()}}
+function roundTop(n){return `<div class="round-progress"><span class="active"></span><span class="${n>=2?'active':''}"></span><span class="${n>=3?'active':''}"></span></div><div class="top"><button class="pill" onclick="backRound(${n})">← Назад</button><div class="pill">Раунд ${n} / 3</div><div class="pill">${esc(selectedName())}</div></div>`}
+function gameHTML(){
+ if(state.step===0)return `<div class="round-screen">${roundTop(1)}<div class="hero"><div class="kicker">Раунд 1</div><h2>Стиль поездки</h2><p class="lead">Распредели ровно 10 дней между тремя типами отдыха.</p></div><div class="card">${dayControl("beach","🏖️","Пляж")}${dayControl("city","🏙️","Города")}${dayControl("nature","🌿","Природа / активный отдых")}<div class="round-total"><b>${sumDays()}/10 дней</b></div><button class="btn orange" ${sumDays()===10?"":"disabled"} onclick="nextRound()">Дальше</button></div></div>`;
+ if(state.step===1)return `<div class="round-screen">${roundTop(2)}<div class="hero"><div class="kicker">Раунд 2</div><h2>Логистика</h2><p class="lead">Задай бюджет, длительность и желаемый период старта в 2027 году.</p></div><div class="card"><b>Длительность</b><div class="range-row"><div><div class="small">от</div><input class="input" type="number" min="1" max="30" value="${state.daysMin}" oninput="setNumber('daysMin',this.value)"></div><div><div class="small">до</div><input class="input" type="number" min="1" max="30" value="${state.daysMax}" oninput="setNumber('daysMax',this.value)"></div></div><div class="spacer"></div><b>Бюджет на человека</b><input class="input" style="margin-top:8px" type="number" step="5000" value="${state.budget}" oninput="setNumber('budget',this.value)"><div class="spacer"></div><b>Желаемый старт</b><div class="range-row" style="margin-top:8px"><select class="input" onchange="setMonth('startMonth',this.value)">${MONTHS.map((m,i)=>`<option value="${i+1}" ${state.startMonth===i+1?"selected":""}>${m}</option>`).join("")}</select><select class="input" onchange="setMonth('endMonth',this.value)">${MONTHS.map((m,i)=>`<option value="${i+1}" ${state.endMonth===i+1?"selected":""}>${m}</option>`).join("")}</select></div><div class="small" style="margin-top:8px">От ${MONTHS[state.startMonth-1]} до ${MONTHS[state.endMonth-1]} 2027.</div><button class="btn orange" style="margin-top:18px" onclick="nextRound()">Дальше</button></div></div>`;
+ return `<div class="round-screen">${roundTop(3)}<div class="hero"><div class="kicker">Раунд 3</div><h2>Предпочтения</h2><p class="lead">Эти параметры влияют на рейтинг стран и состав маршрута.</p></div><div class="card">${metric("nightlife","🍻","Ночная жизнь","Бары, клубы и вечерняя активность.")}${metric("comfort","🛏️","Комфорт","Жильё и бытовой уровень.")}${metric("pace","🏃","Темп","Сколько активностей хочется успеть.")}${metric("history","🏛️","История","Архитектура, музеи и исторические места.")}</div><div class="hero compact"><div class="kicker">Red flags</div><h2>Что точно не подходит?</h2></div><div class="card">${REDFLAGS.map(x=>`<button class="choice ${state.flags.includes(x[0])?"selected":""}" onclick="toggleFlag('${x[0]}')"><span class="emoji">${x[1]}</span><b>${x[2]}</b><div class="small">${x[3]}</div></button>`).join("")}<button class="btn orange" onclick="finish()">Показать мой результат</button></div></div>`;
+}
+function resultRows(arr){return arr.slice(0,5).map((x,i)=>`<div class="result-row"><div class="rank">${i+1}</div><div class="country-flag">${x.e}</div><div style="flex:1"><div class="country-name">${x.n}</div><div class="reason">${x.tags.slice(0,3).join(" · ")}</div><div class="bar"><i style="width:${x.score.toFixed(1)}%"></i></div></div><div class="score">${x.score.toFixed(1)}%</div></div>`).join("")}
+function profileTags(p){return `<div class="tags"><span class="tag">🏖️ ${p.days.beach}/10</span><span class="tag">🏙️ ${p.days.city}/10</span><span class="tag">🌿 ${p.days.nature}/10</span><span class="tag">📅 ${MONTHS[p.startMonth-1]}–${MONTHS[p.endMonth-1]}</span><span class="tag">💰 ${(p.budget/1000).toFixed(0)}К ₽</span><span class="tag">🗓️ ${p.daysMin}–${p.daysMax} дней</span></div>`}
+function resultHTML(){
+ const r=state.individual||calcFor(state), top=r[0];
+ return `<div class="top"><div class="pill">Твой результат</div><div class="pill">${state.mode==="guest"?"Гость":"Участник"}</div></div><div class="hero"><div class="kicker">Travel DNA</div><h2>Топ направлений</h2><p class="lead">${state.mode==="guest"?"Этот результат не попадёт в группу.":"Этот результат сохраняется в общем драфте и обновляется, если пройти анкету ещё раз."}</p></div><div class="card">${resultRows(r)}</div><div class="card"><b>Твой профиль</b>${profileTags(state)}</div><div class="card"><b>Red flags</b><div class="tags">${state.flags.length?state.flags.map(f=>{const x=REDFLAGS.find(z=>z[0]===f);return `<span class="tag warn">${x[1]} ${x[2]}</span>`}).join(""):"<span class='small'>Не выбраны</span>"}</div></div>${routeCard(top,[state])}<button class="btn orange" onclick="showResults()">Открыть драфт группы</button><div class="spacer"></div><button class="btn alt" onclick="go('home')">На главную</button>`;
+}
+function routeCard(country,all){const route=routeFor(country,all);return `<div class="card route-card"><div class="route-head"><div><div class="kicker">Маршрут</div><h2 style="margin-bottom:5px">${country.e} ${country.n}</h2><div class="small">Маршрут учитывает распределение пляж / города / природа и предпочтения группы.</div></div><div class="route-total">${route.reduce((s,x)=>s+x.days,0)} дней</div></div><div id="map" style="margin-top:14px"></div><div>${route.map((x,i)=>`<div class="route-stop"><div class="stop-num">${i+1}</div><div><div class="stop-name">${x.name} · ${x.days} дн.</div><div class="stop-meta">${x.meta}</div></div></div>`).join("")}</div></div>`}
+function resultsHTML(){
+ const all=groupCache.filter(x=>x.name).map(normalizePerson), agg=aggregate(all), top=agg[0], flags=aggregateFlags(all), gp=groupProfile(all);
+ if(!top)return `<div class="top"><button class="pill" onclick="go('home')">← Главная</button></div><div class="hero"><div class="kicker">Общий драфт</div><h2>Пока пусто</h2><p class="lead">Пройди анкету как участник, чтобы появился общий результат.</p></div><button class="btn orange" onclick="startGuest()">Пройти как гость</button>`;
+ return `<div class="top"><button class="pill" onclick="go('home')">← Главная</button><div class="pill">${all.length}/${PEOPLE.length}</div></div><div class="hero"><div class="kicker">Драфт группы</div><h2>Куда едет компания?</h2><p class="lead">Главные направления, ограничения группы, победитель и маршрут.</p></div>
+ <div class="card"><b>Топ подходящих направлений</b>${resultRows(agg.slice(0,3).map(x=>({...x,score:x.score})))}</div>
+ <div class="card"><b>Топ red flags</b><div class="tags">${flags.length?flags.slice(0,5).map(x=>`<span class="tag warn">${x[1]} ${x[2]} · ${x.count}/${all.length}</span>`).join(""):"<span class='small'>Пока никто не отметил ограничения.</span>"}</div></div>
+ <div class="card winner"><div class="winner-label">Победитель по текущему расчёту</div><h2>${top.e} ${top.n}</h2><div class="score" style="margin:0;font-size:31px">${top.score.toFixed(1)}%</div><div class="winner-meta">${all.length} участников · бюджет в среднем ${(gp.budget/1000).toFixed(0)}К ₽ · длительность ${gp.daysMin}–${gp.daysMax} дней</div><div class="tags"><span class="tag">🏖️ ${(gp.beach*100).toFixed(0)}% веса</span><span class="tag">🏙️ ${(gp.city*100).toFixed(0)}% города</span><span class="tag">🌿 ${(gp.nature*100).toFixed(0)}% природы</span><span class="tag">📅 ${MONTHS[gp.startMonth-1]}–${MONTHS[gp.endMonth-1]}</span></div></div>
+ ${routeCard(top,all)}
+ <div class="card"><div class="backline"><b>Кто уже прошёл</b></div><div class="people-strip">${all.map(p=>`<div class="person-mini" onclick="openPerson('${encodeURIComponent(p.name)}')" title="${esc(p.name)}">${avatarHTML(p.name)}<span>${esc(p.name.split(" ")[0])}</span></div>`).join("")}</div></div>
+ <button class="btn orange" onclick="startGuest()">Пройти как гость</button>`;
+}
+function personResultHTML(){
+ const p=groupCache.find(x=>x.name===state.viewingPerson);if(!p)return `<div class="card">Результат не найден</div>`;
+ const r=calcFor(p),top=r[0];
+ return `<div class="top"><button class="pill" onclick="showResults()">← К группе</button><div class="pill">Личный результат</div></div><div class="hero"><div class="kicker">Личный профиль</div><div style="display:flex;align-items:flex-end;gap:12px">${avatarHTML(p.name,"hero-avatar")}<div><h2 style="margin:0">${esc(p.name)}</h2><p class="lead">Отдельный результат. В групповой рейтинг его ответы уже входят.</p></div></div></div><div class="card">${resultRows(r)}</div><div class="card"><b>Профиль</b>${profileTags(p)}</div>${routeCard(top,[p])}`;
+}
+function openPerson(encoded){state.viewingPerson=decodeURIComponent(encoded);state.screen="personResult";render()}
+function showResults(){state.screen="results";render()}
+function go(s){state.screen=s;render()}
+function render(){
+ const a=document.getElementById("app");
+ if(state.screen==="home")a.innerHTML=`<div class="top"><div class="logo">✈️ ДРАФТ ОТПУСКА</div><div class="pill">2027</div></div><div class="hero"><div class="kicker">Vacation Draft</div><h1>Куда едем<br>всем составом?</h1><p class="lead">Каждый отвечает за себя. Группа получает общий драфт, а гость — только свой личный результат.</p></div><div class="card"><button class="btn orange" onclick="startParticipant()">Выбрать персонажа и пройти</button><div class="spacer"></div><button class="btn alt" onclick="startGuest()">Я гость</button><div class="spacer"></div><button class="btn alt" onclick="showResults()">Смотреть драфт группы</button></div>`;
+ else if(state.screen==="character")a.innerHTML=characterHTML();
+ else if(state.screen==="game")a.innerHTML=gameHTML();
+ else if(state.screen==="result")a.innerHTML=resultHTML();
+ else if(state.screen==="results")a.innerHTML=resultsHTML();
+ else if(state.screen==="personResult")a.innerHTML=personResultHTML();
+ save();bindSwipe();
+ if(["result","results","personResult"].includes(state.screen))setTimeout(initMap,0);
+}
+function initMap(){
+ const el=document.getElementById("map");if(!el)return;
+ if(mapInstance){try{mapInstance.remove()}catch(e){}mapInstance=null}
+ let country,all;
+ if(state.screen==="results"){all=groupCache.filter(x=>x.name).map(normalizePerson);country=aggregate(all)[0]}else if(state.screen==="personResult"){const p=groupCache.find(x=>x.name===state.viewingPerson);country=calcFor(p)[0];all=[p]}else{country=(state.individual||calcFor(state))[0];all=[state]}
+ if(!country)return;
+ const route=routeFor(country,all);if(!route.length)return;
+ mapInstance=L.map(el,{scrollWheelZoom:false,zoomControl:true,attributionControl:true});
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:8,attribution:"© OpenStreetMap contributors"}).addTo(mapInstance);
+ const latlngs=route.map(x=>[x.lat,x.lng]);
+ const under=L.polyline(latlngs,{color:"#ff7442",weight:11,opacity:.18,lineCap:"round",lineJoin:"round"}).addTo(mapInstance);
+ const line=L.polyline(latlngs,{color:"#ff7442",weight:5,opacity:.95,dashArray:"9 10",lineCap:"round",lineJoin:"round"}).addTo(mapInstance);
+ route.forEach((x,i)=>{const icon=L.divIcon({className:"",html:`<div class="marker">${i+1}</div>`,iconSize:[30,30],iconAnchor:[15,15]});L.marker([x.lat,x.lng],{icon}).addTo(mapInstance).bindPopup(`<b>${x.name}</b><br>${x.days} дн.<br><span style="color:#777">${x.meta}</span>`)});
+ mapInstance.fitBounds(line.getBounds(),{padding:[25,25]});
+}
+async function loadAvatars(){return AVATARS;}
+load();render();syncGroup();loadAvatars().then(()=>{if(state.screen==="character"||state.screen==="results"||state.screen==="personResult")render()});
+</script>
+</body>
+</html>
